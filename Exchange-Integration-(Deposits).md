@@ -37,7 +37,7 @@ First way (you generate your own payment ids):
 
 		For example: this could be the id# of the user in the database converted to hex demonstrated in python snippet below:
 
-		 > PID = binascii.hexlify((user_id.to_bytes(32, 'little'))).decode('utf-8')`
+		 > PID = binascii.hexlify((user_id.to_bytes(32, 'little'))).decode('utf-8')
 
 	2. Store this `PID` with the `User`
 
