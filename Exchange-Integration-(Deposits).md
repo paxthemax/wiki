@@ -33,41 +33,44 @@ In order to generate a `payment ID` you have two options:
 
 First way (you generate your own payment ids):
 
-	1. Generate a `payment ID` for the user. 
+1. Generate a `payment ID` for the user. 
 
-		For example: this could be the id# of the user in the database converted to hex demonstrated in python snippet below:
+	For example: this could be the id# of the user in the database converted to hex demonstrated in python snippet below:
 
 		 > PID = binascii.hexlify((user_id.to_bytes(32, 'little'))).decode('utf-8')
 
-	2. Store this `PID` with the `User`
+2. Store this `PID` with the `User`
 
-	3. Now we will create the `Integrated Address` for the `User`.
+3. Now we will create the `Integrated Address` for the `User`.
 
-	4. `Trim` the last `48 characters` which are `0's` from the `PID`.
+4. `Trim` the last `48 characters` which are `0's` from the `PID`.
 
-	5. `Call` to the `safex-wallet-rpc` with the following command using the `trimmed PID` as the `payment_id` parameter:
+5. `Call` to the `safex-wallet-rpc` with the following command using the `trimmed PID` as the `payment_id` parameter:
 
-		> curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"make_integrated_address","params":{"standard_address":"<YOUR SAFEX 		ADDRESS", "payment_id":"<TRIMMED PID>"}}' -H 'Content-Type: application/json'
+	    > curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"make_integrated_address","params":{"standard_address":"<YOUR SAFEX 		ADDRESS", "payment_id":"<TRIMMED PID>"}}' -H 'Content-Type: application/json'
 
-	6. `Store` the responded `Integrated Address` to the `User`.
+6. `Store` the responded `Integrated Address` to the `User`.
 
-	7. You can verify the stored payment id with the response received that the two are matching, what is stored in the database and the was provided from the safex-wallet-rpc
+7. You can verify the stored payment id with the response received that the two are matching, what is stored in the database and the was provided from the safex-wallet-rpc
 
 	
-	Now Verifying received payment.
-		Now in order to verify that a payment was received we recommend using the `get_bulk_payments` method.
+Now Verifying received deposits.
+		Now in order to verify that a deposit was received we recommend using the `get_bulk_payments` method.
 		
-		You will supply the starting block height from which to scan. After running the get_bulk_payments method you should record the last mined top block.
+You will supply the starting `block height` from which to scan. After running the `get_bulk_payments` method you should record the last mined top block.
 
-		1. First thing that we will do is run the `get_bulk_payments` method. 
-			curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_bulk_payments","params":{"min_block_height":0}}' -H 			'Content-Type: application/json'
+1. First thing that we will do is run the `get_bulk_payments` method. 
+        
+        > curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_bulk_payments","params":{"min_block_height":0}}' -H 			'Content-Type: application/json'
 		
-		2. Next we run `get_height` to record the top block that we scanned:
-			curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_height","params":{}}' -H 			'Content-Type: application/json'
+2. Next we run `get_height` to record the top block that we scanned:
+		
+		> curl -X POST http://127.0.0.1:17405/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"get_height","params":{}}' -H 			'Content-Type: application/json'
 
-		3. Then you should subtract 1 from the received block height since the top block could be a block in progress of mining. We don't want to miss any blocks, this 			method will ensure we are scanning each and every block for transactions. This order is essential because if you are scanning a large distance of the chain, 			then blocks will be constantly produced while you are still processing transactions.
+3. Then you should subtract 1 from the received block height since the top block could be a block in progress of mining. We don't want to miss any blocks, this 			method will ensure we are scanning each and every block for transactions. This order is essential because if you are scanning a large distance of the chain, 			then blocks will be constantly produced while you are still processing transactions.
 
-		The response from `get_bulk_payments` will look like this:
+	The response from `get_bulk_payments` will look like this:
+```
 {
   "id": "0",
   "jsonrpc": "2.0",
@@ -103,10 +106,11 @@ First way (you generate your own payment ids):
     ]
   }
 }
+```
 
-	The above response has an object: results, and inside we have the payments object that is an array of transactions from all blocks scanned. 
+The above response has an object: results, and inside we have the payments object that is an array of transactions from all blocks scanned. 
 	
-	5. Now we iterate over the `payments` and extract "payment_id" and "tx_hash" and check our payments table in the database that we have not already processed this "tx_hash". We should store payment_id, tx_hash, block_height, amount, and token or cash transaction.
+5. Now we iterate over the `payments` and extract "payment_id" and "tx_hash" and check our payments table in the database that we have not already processed this "tx_hash". We should store payment_id, tx_hash, block_height, amount, and token or cash transaction.
 
 		5. a. To check if the transaction is token or cash you check the "token_transaction" field. If it is `true` then this is a token transaction.
 	
@@ -114,11 +118,11 @@ First way (you generate your own payment ids):
 
 		5. c. If the token_transaction is `false` then it is a safex cash transaction.
 
-	6. If we do not have a collision in the payments table, then we can update our User balance by matching the "payment_id" from the payment in question.
+6. If we do not have a collision in the payments table, then we can update our User balance by matching the "payment_id" from the payment in question.
 
-	7. Repeat for all payments in the array.
+7. Repeat for all payments in the array.
 
-	8. Run this regularly at least each two minutes to be most up to date with your Users deposits.		
+8. Run this regularly at least each two minutes to be most up to date with your Users deposits.		
 
 
 Now Confirming Deposits:
