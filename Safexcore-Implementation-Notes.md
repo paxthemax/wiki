@@ -477,6 +477,7 @@ Transaction verification has been updated to handle new token related types of t
 CLI wallet _safex-wallet-cli_ is the basic wallet implementation based on Monero CLI wallet. More advanced options inherited from Monero blockchain are disabled while others specific to Safex blockchain are enabled. _safex-advanced-wallet-cli_ which build is disabled by default for regular users has some additional functionality (migration transactions).
 
 Menu options:
+
 	[wallet SFXtzS]: help
 	Commands:
 	  account
@@ -546,40 +547,5 @@ In first release of Safex blockchain, most significant changes in wallet compare
 ### JSON Wallet
 
 Safex JSON wallet rpc is based off of Monero JSON wallet rpc. The changes are related to the addition of Safex tokens. A new method has been added transfer_token. It behaves almost exactly like transfer, except it deals with tokens instead if cash. Token related information was added to responses to calls made to _get_balance_, _get_payments_, etc. 
-
-### Token transaction CLI wallet command
-
-Send Safex tokens to a number of recipients.
-
-_Request_
-
-* destinations - array of destinations to receive XMR:
-* amount (unsigned int): Amount to send to each destination, in atomic units.
-* address (string): Destination public address.
-* account_index (unsigned int): Transfer from this account index.
-* subaddr_indices (array of unsigned int): Transfer from this set of subaddresses.
-* fee (unsigned int): Ignored, will be automatically calculated.
-* mixin (unsigned int): Number of outputs from the blockchain to mix with (0 means no mixing).
-* unlock_time (unsigned int): Number of blocks before the monero can be spent (0 to not add a lock).
-* payment_id (string)[optional]: Random 32-byte/64-character hex string to identify a transaction.
-* get_tx_key (boolean)[optional]: Return the transaction key after sending.
-* priority (unsigned int): Set a priority for the transaction. Accepted Values are: 0-3 for: default, unimportant, normal, elevated, priority.
-* do_not_relay (boolean)[optional]: If true, the newly created transaction will not be relayed to the monero network. (Defaults to false)
-* get_tx_hex (boolean): Return the transaction as hex string after sending
-* get_tx_metadata (boolean): Return the metadata needed to relay the transaction.
-
-_Response_
-
-* fee: Integer value of the fee charged for the txn
-* tx_hash: String for the publicly searchable transaction hash
-* tx_key: String for the transaction key if get_tx_key is true, otherwise, blank string.
-* amount_keys: List of strings for the amount keys
-* amount: Amount transferred for the transaction
-* tx_blob: Raw transaction represented as hex string, if get_tx_hex is true
-* Tx_metadata: Set of transaction metadata needed to relay this transfer later, if get_tx_metadata is true
-* multisig_txset: Set of multisig transactions in the process of being signed (empty for non-multisig)
-
-
-
 
 
