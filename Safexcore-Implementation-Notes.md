@@ -1,6 +1,6 @@
 ## Introduction
 
-Safex is a open source blockchain project that is creating a purely peer-to-peer marketplace with an embedded cryptocurrency that maintains privacy, has an emission rate that is inclusive, is easy to obtain, and easy to use by a wide group of people. The Safex Team believes that this will enable mass adoption of decentralized Cryptocurrency.
+Safex is an open source blockchain project that is aiming to create a purely peer-to-peer marketplace with an embedded cryptocurrency that maintains privacy, has an inclusive emission rate, is easy to obtain, and to use by a wide group of people. The Safex Team believes that this will enable mass adoption of decentralized Cryptocurrency.
 
 More info about project:
 * [Project website](https://safex.io/)
@@ -8,13 +8,13 @@ More info about project:
 * [Safex roadmap](https://safex.io/roadmap)
 * [Safex blockchain explorer](http://explore.safex.io/)
 
-The purpose of this document is to organize the current Safexcore implementation and knowledge for the purpose of reference and review by the open source development community. The Safex Team would welcome any productive feedback from the community related to security/integrity/potential bugs and errors in the current implementation.
+The purpose of this document is to create and maintain an up to date knowledge base to all things related to the current Safexcore implementation for the purpose of reference and review by the open source development community. The Safex Team would welcome any productive feedback from the community related to security/integrity/potential bugs and errors in the current implementation.
 
 As of February 2019, Safex main network is on version 1.1.2, and hard fork version 3.
 
 ### Codebase
 
-Safex has forked Monero codebase in April 2018. (between Monero releases v0.12.0.0 and v0.12.1.0) on commit 8fdf645397654956b74d6ddcd79f94bfa7bf2c5f. After fork, the Safex Team has implemented numerous changes (for first release about 20k lines of source code changes/insertions) to set up the foundation for the Safex Blockchain. We will outline the specific changes the team has made that should be reviewed by the open source development community.
+Safex has forked the Monero codebase in April 2018. (between Monero releases v0.12.0.0 and v0.12.1.0) on commit 8fdf645397654956b74d6ddcd79f94bfa7bf2c5f. After the fork, the Safex Team has implemented numerous changes (for first release about 20k lines of source code changes/insertions) to set up the foundation for the Safex Blockchain. This document provides an overview of the aformentioned changes:
 
 ## Safexcore Node Architecture
 ![Safexcore Arhitecture Diagram](https://github.com/safex/wiki/blob/master/Safexcore_Implementation_Notes/CoreDiagram.png)
@@ -28,7 +28,7 @@ Safex has forked Monero codebase in April 2018. (between Monero releases v0.12.0
 
 ### Cryptonote::core
 
-_Cryptonote::core_ class handles core cryptonote protocol functionality, it is defined in _cryptonote_core.h_ file. This class coordinates cryptonote functionality including communication among the Blockchain, transaction pool, any miners and the network. 
+_Cryptonote::core_ class handles core cryptonote protocol functionality, it is defined in the _cryptonote_core.h_ file. This class coordinates cryptonote functionality including: communication between the Blockchain, transaction pool, any miners and the network. 
 
 
 ## Node p2p protocol
@@ -38,13 +38,13 @@ _Cryptonote::core_ class handles core cryptonote protocol functionality, it is d
 
 More low level Levin protocol discussion is available on [https://github.com/xmr-rs/xmr/blob/master/doc/levin.md](https://github.com/xmr-rs/xmr/blob/master/doc/levin.md), some info here is taken from that page.
 
-The Levin network protocol is an implementation of peer-to-peer (P2P) communications found in a large number of cryptocurrencies, including all of the currencies that are forked from the CryptoNote project. The creator is a Russian programmer called Andrey N. Sabelnikov. A few different implementations of Levin are in existence. Safex uses Epee library implementation. This tcp protocol used to communicate with other nodes. It acts as both a server and a client.
+The Levin network protocol is an implementation of peer-to-peer (P2P) communications found in a large number of cryptocurrencies, including all of the currencies that are forked from the CryptoNote project. The author of the protocol is a Russian developer by the name of Andrey N. Sabelnikov. Several different implementations of Levin are in existence. Safex uses Epee library implementation. This TCP-based protocol is used to communicate with other nodes. It acts as both a server and a client.
 Here are the fundamental concepts in Levin:
-1. **Command**: a command used to talk to another peers, commands are identified by an unsigned integer (uint32_t), this usually starts at 1.000 (e:g: 1000 + 1).
-2. **Invoke**: used to craft commands that need a response, you can think of it as a method, for example you can call a command called ADD with to integers as the input and receive the result.
-3. **Notify**: used for commands that don't need a response, you can create a HELLO command without receiving a response from the peer.
+1. **Command**: represents a command used to talk to other peers. Commands are identified by an unsigned integer (uint32_t) that usually starts with 1.000 (e.g.: 1000 + 1).
+2. **Invoke**: used to craft commands that require a response ie. creating an ADD command with to integers as the input expecting the sum as a result.
+3. **Notify**: used to craft commands without a response ie. creating a HELLO command without receiving a response from the peer.
 
-Levin protocol is communicated using TCP. Packet starts with bucket header, that serves to identify Levin command from other stream data:
+Levin protocol is communicated vis TCP. Packets start with a bucket header that serves to identify a Levin command from other stream data:
 
     struct bucket_head2
      {
@@ -57,7 +57,16 @@ Levin protocol is communicated using TCP. Packet starts with bucket header, that
          uint32_t m_protocol_version;
     };
 
-Where _m_signature_ is binary signature, _m_cb_ is size of message payload after the bucket head, _m_have_to_return_data_ is true for invoke commands and false for notify commands, _m_command_ is id of the command, _m_return_code_ is the response return code from the peer to the command request, _m_flags_ carries information if this message is request or response, and currently used _m_protocol_version_ protocol version is _LEVIN_PROTOCOL_VER_1_. For commands, format used Portable Storage is used and is able to serialize complex data structures. Portable Storage is implemented in _epee/include/storages/portable_storage.h_. Portable storage consist of **Sections**, which represent structure (like a key in a hash map), and **Storage Entry** which represent information itself.
+Where: 
+* _m_signature_ is the binary signature
+* _m_cb_ is the size of the message payload after the bucket head
+* _m_have_to_return_data_ is true for invoke commands and false for notify commands
+* _m_command_ is the ID of the command
+* _m_return_code_ is the response return code from the peer to the command request
+* _m_flags_ carries information if the message is a request or response
+* _m_protocol_version_ protocol version, currently _LEVIN_PROTOCOL_VER_1_
+
+Commands are formatted with **Portable Storage**. Portable Storage is able to serialize complex data structures. It is implemented in _epee/include/storages/portable_storage.h_. Portable storage consist of **sections**, which represent structure (like a key in a hash map), and **storage entries** which represent the information itself.
 
 
 ## Transaction/block verifications
@@ -66,10 +75,14 @@ Where _m_signature_ is binary signature, _m_cb_ is size of message payload after
 
 ![Transaction verification call stack](https://github.com/safex/wiki/blob/master/Safexcore_Implementation_Notes/TransactionVerification.png)
 
-Upon receiving of _NOTIFY_NEW_TRANSACTIONS_ request message from other node using p2p message overlay,P2p payload handler _t_cryptonote_protocol_handler::handle_notify_new_transactions_ callback is executed. Following verifications are performed:
+Upon receiving the _NOTIFY_NEW_TRANSACTIONS_ request message from another node using P2P message overlay, the P2P payload handler _t_cryptonote_protocol_handler::handle_notify_new_transactions_ callback is executed. 
+
+Following verifications are performed:
 * Handler checks if p2p connection with the remote peer is in _cryptonote_connection_context::state_normal_
-* local t_cryptonote_protocol_handler status is synchronized
-* continue with processing binary transaction blob list from _NOTIFY_NEW_TRANSACTIONS_ request. One by one, transactions are forwarded to _cryptonote::core::handle_incoming_tx_ with verification context as return value. If verification of new transaction fails, connection with the remote peer is dropped, as peer node seems to be unreliable. _Handle_notify_new_transactions_ also keeps list of transactions that should be relayed. In case that some of the transactions from the incoming _NOTIFY_NEW_TRANSACTIONS_ list should be relayed further, at the end of the handler _t_cryptonote_protocol_handler<t_core>::relay_transactions_ is called. _Cryptonote::core_ transaction pool (class _cryptonote::tx_memory_pool_) keeps info if transaction from the txpool is relayed.
+* local _t_cryptonote_protocol_handler status_ is synchronized
+* continue with processing binary transaction blob list from _NOTIFY_NEW_TRANSACTIONS_ request. 
+
+One by one, transactions are forwarded to _cryptonote::core::handle_incoming_tx_ with verification context as return value. If verification of new transaction fails, connection with the remote peer is dropped, as peer node seems to be unreliable. _Handle_notify_new_transactions_ also keeps list of transactions that should be relayed. In case that some of the transactions from the incoming _NOTIFY_NEW_TRANSACTIONS_ list should be relayed further, at the end of the handler _t_cryptonote_protocol_handler<t_core>::relay_transactions_ is called. _Cryptonote::core_ transaction pool (class _cryptonote::tx_memory_pool_) keeps info if transaction from the txpool is relayed.
 
 _Cryptonote::core::handle_incoming_tx_, _core::handle_incoming_txs_ implements handling process of incoming transactions. To increase speed of transaction verification, _core::handle_incoming_txs_ uses _tools::threadpool_ to process incoming transactions in parallel, calling in separate thread _core::handle_incoming_tx_pre_ to check each transaction: 
 * transaction blob is checked for size
